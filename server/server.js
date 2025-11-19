@@ -5,6 +5,8 @@ const path = require("node:path");
 const express = require('express');
 const cors = require('cors');
 
+// Import local modules
+const authRoute = require("./routes/authRoute")
 
 // Initialize express app
 const app = express();
@@ -13,6 +15,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
+app.use("/auth", authRoute);
 
 
 // -------------- SERVER --------------------------------
