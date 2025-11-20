@@ -1,65 +1,62 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+const defaultInclude = {
+  author: {
+    select: {
+      id: true,
+      username: true,
+    },
+  },
+  post: {
+    select: {
+      id: true,
+      title: true,
+    },
+  },
+};
 
-class FileModel {
-  async createFile(data) {
-    return await prisma.file.create({
+class CommentModel {
+  async createComment(data) {
+    return prisma.comment.create({
       data: {
-        filename: data.filename,
-        size: data.size,
-        type: data.type,
-        url: data.url,
-        userId: data.userId,
+        content: data.content,
+        lastEdit: data.lastEdit ?? null,
+        post: { connect: { id: data.postId } },
+        author: { connect: { id: data.authorId } },
       },
+      include: defaultInclude,
     });
   }
 
-  async getFileById(id) {
-    return await prisma.file.findUnique({
+  async getCommentById(id) {
+    return prisma.comment.findUnique({
+      where: { id },
+      include: defaultInclude,
+    });
+  }
+
+  async getAllComments(filters = {}) {
+    return prisma.comment.findMany({
+      where: filters,
+      orderBy: { id: "desc" },
+      include: defaultInclude,
+    });
+  }
+
+  async updateComment(id, data) {
+    return prisma.comment.update({
+      where: { id },
+      data,
+      include: defaultInclude,
+    });
+  }
+
+  async deleteComment(id) {
+    return prisma.comment.delete({
       where: { id },
     });
   }
-
-  async getFileByName(filename) {
-    return await prisma.file.findFirst({
-      where: { filename },
-    });
-  }
-
-  async getFilesByUser(userId) {
-    return await prisma.file.findMany({
-      where: { userId },
-      orderBy: { id: 'desc' },
-    });
-  }
-
-  async getAllFiles() {
-    return await prisma.file.findMany({
-      orderBy: { id: 'desc' },
-    });
-  }
-
-  async updateFile(id, data) {
-    return await prisma.file.update({
-      where: { id },
-      data: {
-        ...(data.filename && { filename: data.filename }),
-        ...(data.size !== undefined && data.size !== null && { size: data.size }),
-        ...(data.type && { type: data.type }),
-        ...(data.url && { url: data.url }),
-        ...(data.userId && { userId: data.userId }),
-      },
-    });
-  }
-
-  async deleteFile(id) {
-    return await prisma.file.delete({
-      where: { id },
-    });
-  }
-
-
 }
 
-module.exports = new FileModel(); 
+module.exports = new CommentModel();

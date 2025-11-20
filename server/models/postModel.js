@@ -1,65 +1,76 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-
-class FileModel {
-  async createFile(data) {
-    return await prisma.file.create({
-      data: {
-        filename: data.filename,
-        size: data.size,
-        type: data.type,
-        url: data.url,
-        userId: data.userId,
+const defaultInclude = {
+  author: {
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      role: true,
+    },
+  },
+  comments: {
+    select: {
+      id: true,
+      content: true,
+      createdAt: true,
+      lastEdit: true,
+      author: {
+        select: {
+          id: true,
+          username: true,
+        },
       },
-    });
-  }
+    },
+  },
+};
 
-  async getFileById(id) {
-    return await prisma.file.findUnique({
-      where: { id },
-    });
-  }
-
-  async getFileByName(filename) {
-    return await prisma.file.findFirst({
-      where: { filename },
-    });
-  }
-
-  async getFilesByUser(userId) {
-    return await prisma.file.findMany({
-      where: { userId },
-      orderBy: { id: 'desc' },
-    });
-  }
-
-  async getAllFiles() {
-    return await prisma.file.findMany({
-      orderBy: { id: 'desc' },
-    });
-  }
-
-  async updateFile(id, data) {
-    return await prisma.file.update({
-      where: { id },
+class PostModel {
+  async createPost(data) {
+    return prisma.post.create({
       data: {
-        ...(data.filename && { filename: data.filename }),
-        ...(data.size !== undefined && data.size !== null && { size: data.size }),
-        ...(data.type && { type: data.type }),
-        ...(data.url && { url: data.url }),
-        ...(data.userId && { userId: data.userId }),
+        title: data.title,
+        content: data.content,
+        published: data.published ?? false,
+        publishedAt: data.published ? new Date() : null,
+        lastEdit: data.lastEdit ?? null,
+        author: {
+          connect: { id: data.authorId },
+        },
       },
+      include: defaultInclude,
     });
   }
 
-  async deleteFile(id) {
-    return await prisma.file.delete({
+  async getPostById(id) {
+    return prisma.post.findUnique({
+      where: { id },
+      include: defaultInclude,
+    });
+  }
+
+  async getAllPosts(filters = {}) {
+    return prisma.post.findMany({
+      where: filters,
+      orderBy: { id: "desc" },
+      include: defaultInclude,
+    });
+  }
+
+  async updatePost(id, data) {
+    return prisma.post.update({
+      where: { id },
+      data,
+      include: defaultInclude,
+    });
+  }
+
+  async deletePost(id) {
+    return prisma.post.delete({
       where: { id },
     });
   }
-
-
 }
 
-module.exports = new FileModel(); 
+module.exports = new PostModel();

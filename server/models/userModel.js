@@ -39,6 +39,19 @@ class UserModel {
       })
     }
 
+    async getAllUsers() {
+      return await prisma.user.findMany({
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          active: true
+        }
+      })
+    }
+
     async getUserByEmail(email) {
       return await prisma.user.findUnique({
         where: { email: email },
