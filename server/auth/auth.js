@@ -4,7 +4,7 @@ function authRequired(req, res, next) {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-        return res.status(401).json({ error: "No token provided" });
+        return res.status(401).json({ error: "Unauthorized access" });
     }
 
     const token = authHeader.split(" ")[1];  // “Bearer xxxxx”

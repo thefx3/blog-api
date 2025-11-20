@@ -1,12 +1,15 @@
-require('dotenv').config();
+const path = require("node:path");
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 console.log("Environment loaded:", process.env.DB_HOST, process.env.DB_DATABASE);
 
-const path = require("node:path");
 const express = require('express');
 const cors = require('cors');
 
 // Import local modules
-const authRoute = require("./routes/authRoute")
+const authRoute = require("./routes/authRoute");
+const userRoute = require("./routes/userRoute");
+const postRoute = require("./routes/postRoute");
+const commentRoute = require("./routes/commentRoute");
 
 // Initialize express app
 const app = express();
@@ -16,11 +19,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-app.use("/auth", authRoute);
-
+app.use("/api/auth", authRoute);
+app.use("/api/users", userRoute);
+app.use("/api/posts", postRoute);
+app.use("/api/comments", commentRoute);
 
 // -------------- SERVER --------------------------------
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 (async () => {
   try {
     app.listen(PORT, () => {

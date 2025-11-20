@@ -3,9 +3,6 @@ const jwt = require('jsonwebtoken');
 const UserModel = require('../models/userModel');
 const { PrismaClient } = require('@prisma/client');
 
-const userModel = new UserModel();
-
-// -------------- CONTROLLERS ----------------
 
 async function register(req, res) {
     const { username, email, password } = req.body;
@@ -14,7 +11,7 @@ async function register(req, res) {
         return res.status(400).json({ message: 'Username, email, and password are required.' });
     }
 
-    const existingUser = await userModel.getUserByEmail(email);
+    const existingUser = await UserModel.getUserByEmail(email);
 
     if (existingUser) {
         return res.status(409).json({ message: 'User with this email already exists.' });
@@ -23,7 +20,7 @@ async function register(req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     try {
-        const newUser = await userModel.createUser({
+        const newUser = await UserModel.createUser({
             username,
             email,
             password: hashedPassword,
@@ -43,7 +40,7 @@ async function login(req, res) {
           return res.status(400).json({ message: 'Email and password are required.' });
      }
 
-     const user = await userModel.getUserByEmail(email);
+     const user = await UserModel.getUserByEmail(email);
 
      if (!user) {
           return res.status(401).json({ message: 'Invalid email or password.' }); 
@@ -56,16 +53,27 @@ async function login(req, res) {
           process.env.JWT_SECRET,
           { expiresIn: '1h' }
      ); 
+
+     return res.json({ message: "Login success", token });
 }
 
 async function loginSuccess(req, res) {
-  const user = await userModel.user.findUnique({
-    where: { id: req.user.userId },
-    select: { id: true, username: true, email: true, role: true }
-  });
+  try {
+    const user = await UserModel.getUserById(req.user.userId);
 
-  return res.json(user);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { id, username, email, role } = user;
+    return res.json({ id, username, email, role });
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    return res.status(500).json({ message: "Internal server error." });
+  }
 }
+
+//logout = delete the token from the front-end React 
 
 module.exports = {
   register,
