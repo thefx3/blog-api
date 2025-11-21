@@ -67,11 +67,15 @@ async function getSinglePost(req, res) {
 async function createPost(req, res) {
   const { title, content, published } = req.body;
 
-  if (!title || !content || !authorId) {
-    return res.status(400).json({ message: "Title, content and authorId are required." });
+  if (!title || !content) {
+    return res.status(400).json({ message: "Title and content are required." });
   }
 
-  const authorId = req.user.userId;
+  const authorId = req.user?.userId;
+
+  if (!authorId) {
+    return res.status(401).json({ message: "Authentication required." });
+  }
 
   const publishedValue = parseBoolean(published ?? undefined);
   if (publishedValue === null) {
@@ -100,9 +104,8 @@ async function updatePost(req, res) {
   }
 
   const { title, content, published } = req.body;
-  const authorId = req.user.userId;
 
-  if ( title === undefined && content === undefined && published === undefined && authorId === undefined ) {
+  if ( title === undefined && content === undefined && published === undefined ) {
     return res.status(400).json({ message: "No fields provided for update." });
   }
 
@@ -128,14 +131,6 @@ async function updatePost(req, res) {
 
     if (needsEditTimestamp) {
       payload.lastEdit = new Date();
-    }
-
-    if (authorId !== undefined) {
-      const parsedAuthorId = Number(authorId);
-      if (Number.isNaN(parsedAuthorId)) {
-        return res.status(400).json({ message: "Invalid authorId." });
-      }
-      payload.author = { connect: { id: parsedAuthorId } };
     }
 
     if (published !== undefined) {
