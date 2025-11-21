@@ -11,6 +11,8 @@ function parseId(value, label) {
   return parsed;
 }
 
+// api/comments/post/:postId
+
 async function listCommentsByPost(req, res) {
   try {
     const postId = parseId(req.params.postId, "post id");
@@ -25,11 +27,19 @@ async function listCommentsByPost(req, res) {
   }
 }
 
-async function createComment(req, res) {
-  const { content, authorId } = req.body;
+// api/comments/post/:postId
 
-  if (!content || authorId === undefined) {
-    return res.status(400).json({ message: "content and authorId are required." });
+async function createComment(req, res) {
+  const { content } = req.body;
+
+  if (!content === undefined) {
+    return res.status(400).json({ message: "Content is required." });
+  }
+
+  const authorId = req.user?.userId;
+
+  if (!authorId) {
+    return res.status(401).json({ message: "Authentication required." });
   }
 
   try {
@@ -51,6 +61,8 @@ async function createComment(req, res) {
     return res.status(status).json({ message: error.message || "Internal server error." });
   }
 }
+
+// api/comments/:id
 
 async function updateComment(req, res) {
   const { content } = req.body;
