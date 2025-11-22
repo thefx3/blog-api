@@ -2,6 +2,7 @@ const { Router } = require("express");
 const router = Router();
 
 const userController = require('../controllers/userController');
+const authRequired = require("../auth/auth");
 
 router.get('/', userController.listUsers);
 router.get("/:id", userController.getSingleUser)
