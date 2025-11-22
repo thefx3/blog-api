@@ -1,0 +1,28 @@
+.app-body {
+    display: flex;
+    align-items: stretch;
+    min-height: calc(100vh - 72px);
+    background: #fdf8f3;
+    flex: 1 1 auto;
+}
+
+.app-main {
+    flex: 1;
+    min-height: 100%;
+}
+
+@media (max-width: 720px) {
+    .app-body {
+        flex-direction: column;
+    }
+
+    .nav-bar {
+        flex-direction: row;
+        min-width: 0;
+        max-width: none;
+        border-right: none;
+        border-bottom: 1px solid rgba(214, 123, 75, 0.12);
+        height: auto;
+        padding: 0.75rem 1rem;
+    }
+}
